@@ -14,16 +14,16 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
- 
+  
   //create creates a new element based on that model and immediately saves it to the database.
   //There also is Build which also creates a new object based on the model but only in javascript and then we need to save it manually.
   //so create basically does it in one go, while in build we get the object in javascript first before we then have to save it manually.
-
-  Product.create({
+  req.user.createProduct({
     title: title,                                              //left side of':' refers to one of attributes, right side of ':' refers to constant
     price: price,
     imageUrl: imageUrl,
-    description: description
+    description: description,
+   
   })
   .then(result => {
     //console.log(result);
@@ -44,8 +44,10 @@ exports.getEditProduct = (req, res, next) => {
     return res.redirect('/');
   }
   const prodId = req.params.productId;
-  Product.findByPk(prodId)
-    .then(product => {
+  req.user.getProducts({where: {id : prodId}})
+  //Product.findByPk(prodId)
+    .then(products => {
+      const product = products[0];
       if (!product) {                                   //if we get no product, redirect to '/' shop page
         return res.redirect('/');
       }
@@ -93,7 +95,8 @@ exports.postEditProduct = (req, res, next) => {
 
 //Admin Page => to display my products
 exports.getProducts = (req, res, next) => {
-  Product.findAll()
+  req.user
+  .getProducts()
   .then(products => {
     res.render('admin/products', {
       prods: products,
